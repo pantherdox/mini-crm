@@ -7,6 +7,7 @@ import useSWR from "swr";
 import api from "../../lib/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import Link from "next/link";
 
 const fetcher = (url) => api.get(url).then((r) => r.data);
 
@@ -200,6 +201,10 @@ export default function Users() {
           <button onClick={openCreate} className="px-3 py-2 bg-blue-600 text-white rounded">
             New User
           </button>
+          <Link href="/register" className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+              Register User
+            
+          </Link>
         </div>
       </div>
 

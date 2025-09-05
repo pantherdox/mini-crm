@@ -118,7 +118,7 @@ export default function Tasks() {
       key: "actions",
       title: "Actions",
       render: (r) => (
-        <button className="text-sm text-blue-600" onClick={() => openEdit(r)}>
+        <button className="inline-flex items-center md:px-3 px-2 py-1.5 md:text-sm text-xs font-medium border border-blue-300 text-blue-700 rounded hover:bg-blue-50" onClick={() => openEdit(r)}>
           Edit
         </button>
       ),

@@ -90,7 +90,7 @@ export default function LeadDetail() {
 
       <div className="bg-white rounded shadow p-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
-          <div className="flex justify-between">
+          <div className="md:block flex justify-between">
             <h1 className="text-2xl font-bold">{lead.name}</h1>
             <div className="mt-2">
               <Badge color={getStatusColor(lead.status)}>

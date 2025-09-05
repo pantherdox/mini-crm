@@ -17,6 +17,9 @@ export default function Layout({ children }) {
             </div>
           </div>
           <nav className="hidden md:flex gap-4">
+          <Link href="/">
+              Dashboard
+            </Link>
             <Link href="/leads">
               Leads
             </Link>
@@ -31,9 +34,6 @@ export default function Layout({ children }) {
                 Users
               </Link>
             )}
-            <Link href="/">
-              Dashboard
-            </Link>
           </nav>
           <div className="hidden md:block">
             {user ? (

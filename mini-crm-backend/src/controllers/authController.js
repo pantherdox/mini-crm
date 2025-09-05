@@ -164,3 +164,51 @@ exports.deleteUser = async (req, res, next) => {
     res.json({ ok: true });
   } catch (e) { next(e); }
 };
+
+exports.bootstrap = async (req, res, next) => {
+  try {
+    // Check if any admin users exist
+    const adminCount = await User.countDocuments({ role: 'admin', isActive: true });
+    
+    if (adminCount > 0) {
+      return res.status(403).json({ message: 'System already has admin users. Bootstrap is not available.' });
+    }
+    
+    const { name, email, password } = req.body;
+    
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+    
+    // Check if email already exists
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+    
+    // Create the first admin user
+    const user = await User.create({ 
+      name, 
+      email, 
+      password, 
+      role: 'admin' 
+    });
+    
+    res.status(201).json({ 
+      message: 'First admin user created successfully',
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.checkBootstrap = async (req, res, next) => {
+  try {
+    const adminCount = await User.countDocuments({ role: 'admin', isActive: true });
+    res.json({ canBootstrap: adminCount === 0 });
+  } catch (e) {
+    next(e);
+  }
+};

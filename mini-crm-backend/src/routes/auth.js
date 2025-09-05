@@ -8,6 +8,10 @@ router.post('/login', rules.login, ctrl.login);
 router.post('/refresh', rules.refresh, ctrl.refresh);
 router.post('/logout', ctrl.logout);
 
+// Bootstrap routes (no auth required)
+router.get('/bootstrap/check', ctrl.checkBootstrap);
+router.post('/bootstrap', rules.register, ctrl.bootstrap);
+
 // User management routes (admin only)
 router.get('/users', auth, requireRole('admin'), ctrl.listUsers);
 router.patch('/users/:id', auth, requireRole('admin'), ctrl.updateUser);
