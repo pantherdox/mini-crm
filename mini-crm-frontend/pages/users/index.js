@@ -198,13 +198,16 @@ export default function Users() {
             <option value="admin">Admin</option>
             <option value="agent">Agent</option>
           </select>
-          <button onClick={openCreate} className="px-3 py-2 bg-blue-600 text-white rounded">
+          <button onClick={openCreate} className="hidden md:block ml-0 sm:ml-2 px-3 py-2 bg-blue-600 text-white rounded">
             New User
           </button>
-          <Link href="/register" className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+          <button onClick={openCreate} className="md:hidden ml-0 w-full sm:ml-2 px-3 py-2 bg-blue-600 text-white rounded">
+            +
+          </button>
+          {/* <Link href="/register" className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
               Register User
             
-          </Link>
+          </Link> */}
         </div>
       </div>
 
