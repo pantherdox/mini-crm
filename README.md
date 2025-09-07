@@ -1,236 +1,270 @@
-# Mini CRM System
+# Mini CRM — Full Project Guide
 
-A production-ready mini CRM with authentication, role-based access control, lead/customer management, and analytics dashboard.
+Production-ready mini CRM with authentication, role-based access control, lead/customer/task management, activity logging, and a dashboard. This README is interview-ready: it explains architecture, flows, and trade-offs so you can present the project with confidence.
 
-## Features
+## Monorepo Layout
 
-### Authentication & Authorization
-- JWT-based authentication with access and refresh tokens
-- Role-based access control (Admin, Agent)
-- Protected routes on both frontend and backend
+```
+mini-crm/
+  mini-crm-backend/    # Node/Express + MongoDB API
+  mini-crm-frontend/   # Next.js React client
+  README.md            # This file
+```
 
-### Lead Management
-- Create, read, update, and soft delete leads
-- Lead status tracking (New, In Progress, Closed Won, Closed Lost)
-- Lead conversion to customers
-- Search and filter functionality
-- Lead assignment to agents
+## Core Features
 
-### Customer Management
-- Full CRUD operations for customers
-- Customer notes system (shows latest 5)
-- Customer tags and company information
-- Ownership-based access control
-
-### Task Management
-- Task creation with due dates and priorities
-- Task status tracking (Open, In Progress, Done)
-- Task assignment to leads or customers
-- Overdue task indicators with red badges
-- Task filtering by status and overdue status
-- Visual priority and status badges
-
-### Dashboard & Analytics
-- Lead status breakdown
-- Total customers count
-- Open and overdue tasks count
-- Leads created per day chart (last 14 days)
-- Recent activity feed
+- Authentication and Authorization
+  - JWT-based auth: short-lived access token + long-lived refresh token
+  - Role-based access control (RBAC): `admin`, `agent`
+  - Backend guards every `/api/*` route; frontend protects pages
+- Lead Management
+  - CRUD, search/filter, pagination, soft-delete (archive)
+  - Statuses: New, In Progress, Closed Won, Closed Lost
+  - Convert Lead -> Customer; admin can reassign leads
+- Customer Management
+  - CRUD, notes, tags, ownership-based access control
+- Task Management
+  - CRUD, priorities (Low/Medium/High), statuses (Open/In Progress/Done)
+  - Related to Lead or Customer, overdue indicators
+- Dashboard & Activity
+  - Stats: lead status breakdown, customers, tasks, trends
+  - Activity log on key operations (create/update/status changes)
 
 ## Tech Stack
 
-### Backend
-- Node.js + Express
-- MongoDB with Mongoose
-- JWT authentication
-- Express Validator for input validation
-- Helmet for security
-- Morgan for logging
+- Backend: Node.js, Express, MongoDB (Mongoose), JSON Web Tokens, express-validator, Helmet, Morgan
+- Frontend: Next.js 13, React 18, Tailwind CSS, SWR, Recharts, React Hook Form, Axios
 
-### Frontend
-- Next.js 13
-- React 18
-- Tailwind CSS for styling
-- SWR for data fetching
-- Recharts for analytics
-- React Hook Form for form handling
+## Running Locally
 
-## Setup Instructions
+Prerequisites: Node.js 18+, MongoDB (local or Atlas)
 
-### Prerequisites
-- Node.js 18+
-- MongoDB (local or Atlas)
-
-### Backend Setup
-
-1. Navigate to backend directory:
+1) Backend
 ```bash
 cd mini-crm-backend
-```
-
-2. Install dependencies:
-```bash
 npm install
-```
-
-3. Create environment file:
-```bash
-cp .env.example .env
-```
-
-4. Update `.env` with your configuration:
-```env
-MONGODB_URI=mongodb://localhost:27017/mini-crm
-JWT_ACCESS_SECRET=your-super-secret-access-key-here
-JWT_REFRESH_SECRET=your-super-secret-refresh-key-here
-JWT_ACCESS_EXPIRES=15m
-JWT_REFRESH_EXPIRES=7d
-PORT=4000
-NODE_ENV=development
-CORS_ORIGIN=http://localhost:3000
-```
-
-5. Seed the database:
-```bash
+cp .env.example .env   # create if not present
+# .env (example)
+# MONGODB_URI=mongodb://localhost:27017/mini-crm
+# JWT_ACCESS_SECRET=your-access-secret
+# JWT_REFRESH_SECRET=your-refresh-secret
+# JWT_ACCESS_EXPIRES=15m
+# JWT_REFRESH_EXPIRES=7d
+# PORT=4000
+# NODE_ENV=development
+# CORS_ORIGIN=http://localhost:3000
 npm run seed
-```
-
-6. Start the server:
-```bash
 npm run dev
 ```
 
-### Frontend Setup
-
-1. Navigate to frontend directory:
+2) Frontend
 ```bash
 cd mini-crm-frontend
-```
-
-2. Install dependencies:
-```bash
 npm install
-```
-
-3. Create environment file:
-```bash
-cp .env.example .env.local
-```
-
-4. Update `.env.local`:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:4000/api
-```
-
-5. Start the development server:
-```bash
+cp .env.example .env.local   # create if not present
+# .env.local
+# NEXT_PUBLIC_API_URL=http://localhost:4000/api
 npm run dev
 ```
 
-## Default Credentials
+## Default Seeded Users
 
-After running the seed script, you can login with:
+- Admin: `admin@crm.com` / `Admin@123`
+- Agents: `agent1@crm.com` / `Agent@123`, `agent2@crm.com` / `Agent@123`
 
-**Admin User:**
-- Email: admin@crm.com
-- Password: Admin@123
+## First-Time Setup (Bootstrap)
 
-**Agent Users:**
-- Email: agent1@crm.com / agent2@crm.com
-- Password: Agent@123
+If you're setting up the system for the first time without using the seed data, you can create your first admin user through the web interface:
 
-## API Endpoints
+1. Navigate to the login page
+2. Click "🚀 First time? Setup admin user →" (this link only appears when no admin users exist)
+3. Fill out the bootstrap form to create your first admin user
+4. After creation, you can login and use the regular registration process for additional users
 
-### Authentication
-- `POST /api/auth/login` - Login
-- `POST /api/auth/refresh` - Refresh access token
-- `POST /api/auth/logout` - Logout
-- `POST /api/auth/register` - Register new user (Admin only)
+**Note:** The bootstrap process is only available when no admin users exist in the system. Once an admin is created, the bootstrap option disappears and you must use the regular admin-only registration process.
 
-### Leads
-- `GET /api/leads` - List leads with filtering and pagination
-- `GET /api/leads/:id` - Get lead details
-- `POST /api/leads` - Create new lead
-- `PATCH /api/leads/:id` - Update lead
-- `DELETE /api/leads/:id` - Soft delete lead
-- `POST /api/leads/:id/convert` - Convert lead to customer
+## Architecture Overview
 
-### Customers
-- `GET /api/customers` - List customers with filtering and pagination
-- `GET /api/customers/:id` - Get customer details
-- `POST /api/customers` - Create new customer
-- `PATCH /api/customers/:id` - Update customer
-- `POST /api/customers/:id/notes` - Add note to customer
+### Backend (mini-crm-backend)
 
-### Tasks
-- `GET /api/tasks` - List tasks with filtering
-- `POST /api/tasks` - Create new task
-- `PATCH /api/tasks/:id` - Update task
+- Entry: `src/server.js` starts Express after Mongo connects (`src/config/db.js`).
+- App config: `src/app.js` applies security, JSON parsing, logging, CORS, and mounts routes:
+  - `/api/auth` (login/refresh/logout, admin user mgmt)
+  - `/api/leads`, `/api/customers`, `/api/tasks`
+  - `/api/activity`, `/api/dashboard`
+- Middleware:
+  - `middleware/auth.js`: verifies Bearer token, attaches `req.user`, enforces roles via `requireRole()`
+  - `middleware/errorHandler.js`: 404 + error responses
+  - `middleware/activityLogger.js`: `logActivity()` helper saves domain events
+- Validation: `utils/validation.js` centralizes express-validator rules and error formatting
+- Pagination: `utils/pagination.js` parses `page`, `limit` and computes `skip`
+- Controllers implement RBAC and business rules. Examples:
+  - Leads (`controllers/leadController.js`)
+    - Agents can access only their assigned leads; admins can access all
+    - Soft-delete via `archived=true`
+    - `convert` creates a Customer, marks lead status `Closed Won`, logs activity
+    - `reassign` is admin-only
+  - Customers/Tasks guard access by role/ownership similarly
+  - Dashboard computes aggregate metrics; Activity lists recent events
 
-### Dashboard & Activity
-- `GET /api/dashboard` - Get dashboard statistics
-- `GET /api/activity` - Get recent activity feed
+Security considerations:
+- Password hashing with bcrypt (see `models/User.js`)
+- JWT access token verification on every protected route; refresh flow available
+- Helmet for security headers; CORS restricted by `CORS_ORIGIN`
+- Input validation and sanitization on all mutating routes
 
-## Database Schema
+### Frontend (mini-crm-frontend)
 
-### Users
-- name, email, password, role (admin/agent), isActive
+- App wrapper: `pages/_app.js` provides `AuthProvider`
+- Auth state: `context/AuthContext.js`
+  - `login(email, password)`: stores `crm_access` and `crm_refresh`, keeps `user` in `crm_auth`
+  - `logout()`: clears tokens, notifies API, redirects to `/login`
+- API client: `lib/api.js` (Axios)
+  - Sets base URL from `NEXT_PUBLIC_API_URL`
+  - Request interceptor injects `Authorization: Bearer <access>` if present
+  - Response interceptor auto-refreshes on 401 using refresh token; redirects to `/login` on failure
+- UI pages (Next.js pages):
+  - `/login`: sign-in form, stores tokens and user on success
+  - `/`: dashboard
+  - `/leads`, `/leads/[id]`: listing with filters/pagination; details page with actions (update, convert, reassign if admin)
+  - `/customers`, `/customers/[id]`: listing; details with notes, tags
+  - `/tasks`: list/create/update, overdue and status filters
 
-### Leads
-- name, email, phone, status, source, assignedAgent, archived, history
+## Detailed Auth and RBAC Flow
 
-### Customers
-- name, company, email, phone, notes, tags, owner, deals
-
-### Tasks
-- title, dueDate, status, priority, relatedType, relatedId, owner
-
-### Activities
-- type, actor, entityType, entityId, message, meta
-
-## Security Features
-
-- Password hashing with bcrypt
-- JWT token-based authentication
-- Role-based access control with proper data filtering
-- Input validation and sanitization
-- CORS configuration
-- Helmet security headers
-- Protected routes middleware
-- Agents can only see their own data (leads, customers, tasks, activities)
-- Admins can see all data across the system
-
-## Development
-
-### Running Tests
-```bash
-# Backend
-cd mini-crm-backend
-npm test
-
-# Frontend
-cd mini-crm-frontend
-npm test
+1) Login
+```http
+POST /api/auth/login
+{
+  "email": "admin@crm.com",
+  "password": "Admin@123"
+}
 ```
+Response includes `{ accessToken, refreshToken, user }`.
+- Frontend stores: `crm_access`, `crm_refresh`, and `crm_auth` (user payload)
 
-### Building for Production
-```bash
-# Backend
-cd mini-crm-backend
-npm run build
+2) Using access token
+- API requests include `Authorization: Bearer <accessToken>` via interceptor
 
-# Frontend
-cd mini-crm-frontend
-npm run build
-```
+3) Auto refresh
+- On a 401 response, the interceptor calls `POST /api/auth/refresh` with `{ refreshToken }`
+- If successful, new access token is stored and the original request is retried
+- If refresh fails, tokens are cleared and user is redirected to `/login`
 
-## Contributing
+4) RBAC enforcement
+- `middleware/auth.js` attaches `{ id, role, name }` to `req.user`
+- `requireRole('admin')` guards admin-only routes
+- Ownership: for agents, list/detail queries are filtered by `req.user.id`
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+## API Surface (High-Level)
+
+Authentication
+- POST `/api/auth/login` — login
+- POST `/api/auth/refresh` — refresh access token
+- POST `/api/auth/logout` — logout
+- POST `/api/auth/register` — admin only (create users)
+- GET `/api/auth/users` — admin only (list users)
+- PATCH `/api/auth/users/:id` — admin only (update user)
+- DELETE `/api/auth/users/:id` — admin only (delete user)
+
+Leads
+- GET `/api/leads` — filters: `status`, `q`, `page`, `limit`, `archived`, `assignedAgent`
+- GET `/api/leads/:id`
+- POST `/api/leads`
+- PATCH `/api/leads/:id`
+- DELETE `/api/leads/:id` — soft delete
+- POST `/api/leads/:id/convert` — Lead -> Customer
+- POST `/api/leads/:id/reassign` — admin only
+
+Customers
+- GET `/api/customers` — filters: `q`, `page`, `limit`
+- GET `/api/customers/:id`
+- POST `/api/customers`
+- PATCH `/api/customers/:id`
+- POST `/api/customers/:id/notes`
+
+Tasks
+- GET `/api/tasks` — filters: `owner`, `status`, `due`
+- POST `/api/tasks`
+- PATCH `/api/tasks/:id`
+
+Dashboard & Activity
+- GET `/api/dashboard`
+- GET `/api/activity`
+
+Response patterns:
+- List endpoints return `{ page, limit, total, items }`
+- Errors return `{ message }` or `{ errors: [ { msg, param, ... } ] }` for validation
+
+## Data Model (Conceptual)
+
+- User: `name`, `email`, `password`, `role` (`admin|agent`), `isActive`
+- Lead: `name`, `email`, `phone`, `status`, `source`, `assignedAgent`, `archived`, `history[]`
+- Customer: `name`, `company`, `email`, `phone`, `notes[]`, `tags[]`, `owner`
+- Task: `title`, `dueDate`, `status`, `priority`, `relatedType` (`Lead|Customer`), `relatedId`, `owner`
+- Activity: `type`, `actor`, `entityType`, `entityId`, `message`, `meta`
+
+Notes:
+- History arrays capture audit events at the entity level
+- Activity collection powers the global recent activity feed
+
+## UI Walkthrough (What to Demo)
+
+1) Login as Admin
+- Show redirect to dashboard, top stats, and activity feed
+
+2) Leads
+- Create a lead; update status; demonstrate search/filter and pagination
+- Convert a lead to a customer; point to activity feed entry
+- Reassign a lead (admin-only) and show it reflected in listing/detail
+
+3) Customers
+- Open the converted customer; add a note; tag a customer
+
+4) Tasks
+- Create a task related to the customer; set due date and priority
+- Show overdue styling when applicable
+
+5) RBAC
+- Log out; log in as `agent1@crm.com`
+- Demonstrate that the agent only sees their leads/customers/tasks
+
+## Environment Variables
+
+Backend `.env`
+- `MONGODB_URI` — Mongo connection string
+- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` — secrets for signing tokens
+- `JWT_ACCESS_EXPIRES` (e.g., `15m`), `JWT_REFRESH_EXPIRES` (e.g., `7d`)
+- `PORT` — default 4000
+- `NODE_ENV` — `development|production`
+- `CORS_ORIGIN` — comma-separated origins, e.g., `http://localhost:3000`
+
+Frontend `.env.local`
+- `NEXT_PUBLIC_API_URL` — e.g., `http://localhost:4000/api`
+
+## Production Notes
+
+- Serve backend behind a reverse proxy (Nginx) with HTTPS; set secure cookies if you move to cookie-based auth
+- Configure `CORS_ORIGIN` to known domains
+- Use environment-specific secrets management (e.g., cloud secret manager)
+- Enable MongoDB indexes and backups; consider connection pool sizing
+- Observability: enable structured logs and metrics; add request IDs
+
+## Troubleshooting
+
+- 401 errors repeatedly on frontend: ensure refresh token exists and `/auth/refresh` is reachable; verify time sync and JWT secrets
+- CORS blocked: make sure `CORS_ORIGIN` includes the frontend URL and the frontend uses the same origin in `NEXT_PUBLIC_API_URL`
+- Mongo connection fails: verify `MONGODB_URI` and that Mongo is running/accessible
+- Seed data missing: rerun `npm run seed` in `mini-crm-backend`
+
+## Future Enhancements
+
+- Multi-tenant support (orgs), invitations, and user self-service
+- Advanced lead scoring and pipeline stages; custom fields
+- Webhooks and integrations (email, Slack, calendar)
+- Server-side pagination for all heavy lists in UI; infinite scroll
+- E2E tests (Playwright/Cypress) and API tests (Jest/Supertest)
+- CI/CD pipeline, containerization, and Terraform/IaC
 
 ## License
 
